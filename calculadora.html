@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Calculadora de Productos - Laboratorios Mar</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background: #ffffff;
+    color: #0f172a;
+}
+
+.container {
+    max-width: 360px;
+    margin: auto;
+    padding: 20px 14px;
+}
+
+.logo { text-align: center; margin-bottom: 18px; }
+
+.logo img {
+    width: 100%;
+    border-radius: 14px;
+    background: #e6f4fb;
+    padding: 12px;
+}
+
+.calculator {
+    width: 100%;
+    background: #f0f9ff;
+    border-radius: 18px;
+    padding: 22px 18px;
+    box-shadow: 0 8px 25px rgba(15, 23, 42, 0.12);
+}
+
+h2 {
+    text-align: center;
+    margin: 0 0 16px 0;
+    font-weight: 600;
+    color: #0369a1;
+}
+
+label {
+    display: block;
+    margin-top: 14px;
+    font-size: 14px;
+    color: #075985;
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    margin-top: 6px;
+    border-radius: 10px;
+    border: 1px solid #bae6fd;
+    font-size: 16px;
+    background: #ffffff;
+    color: #0f172a;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 2px rgba(56,189,248,0.35);
+}
+
+button {
+    width: 100%;
+    margin-top: 18px;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.result {
+    margin-top: 18px;
+    padding: 14px;
+    border-radius: 14px;
+    background: #e0f2fe;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.copy-btn {
+    background: linear-gradient(135deg, #22d3ee, #06b6d4);
+}
+
+.copy-msg {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 13px;
+    color: #0284c7;
+    display: none;
+}
+
+footer {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 12px;
+    color: #64748b;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="logo">
+        <img src="logoCalculadora.png" alt="Calculadora de Productos - Laboratorios Mar">
+    </div>
+
+    <div class="calculator">
+        <h2>Calculadora</h2>
+
+        <label>Producto</label>
+        <select id="price">
+            <option value="">Seleccionar producto</option>
+        </select>
+
+        <label>Cantidad de unidades</label>
+        <input type="number" id="quantity" placeholder="Ej: 1">
+
+        <label>Descuento aplicado (%)</label>
+        <input type="number" id="discount" placeholder="Ej: 38%">
+
+        <button onclick="calculate()">Calcular</button>
+
+        <div class="result" id="result" style="display:none;"></div>
+
+        <button class="copy-btn" onclick="copyTotal()" id="copyBtn" style="display:none;">
+            Copiar detalle de total
+        </button>
+
+        <div class="copy-msg" id="copyMsg">Total copiado ✔</div>
+    </div>
+
+    <footer>
+        Laboratorios Mar · Herramienta de cálculo
+    </footer>
+
+</div>
+
+<script>
+let finalTotalGlobal = 0;
+let productos = [];
+
+/* ========= FORMATO MONEDA ========= */
+function formato(v) {
+    return "$" + Number(v).toLocaleString("es-AR");
+}
+
+/* ========= CARGA PRODUCTOS ========= */
+fetch("/api/productos")
+.then(r => r.json())
+.then(data => {
+    productos = data;
+    const select = document.getElementById("price");
+
+    data.forEach(p => {
+        const option = document.createElement("option");
+        option.value = p.precio;
+        option.textContent = `${p.nombre} (${formato(p.precio)})`;
+        select.appendChild(option);
+    });
+});
+
+/* AUTOCOMPLETAR CANTIDAD EN 1 */
+document.getElementById("price").addEventListener("change", function() {
+    const quantityInput = document.getElementById("quantity");
+
+    if (this.value && !quantityInput.value) {
+        quantityInput.value = 1;
+    }
+});
+
+
+/* ========= CALCULO ========= */
+function calculate() {
+    const price = parseFloat(document.getElementById("price").value) || 0;
+    const quantity = parseInt(document.getElementById("quantity").value) || 0;
+    const discount = parseFloat(document.getElementById("discount").value) || 0;
+
+    if (!price || !quantity) return;
+
+    const total = price * quantity;
+    const discountAmount = total * (discount / 100);
+    finalTotalGlobal = total - discountAmount;
+
+    const resultDiv = document.getElementById("result");
+    resultDiv.style.display = "block";
+    resultDiv.innerHTML = `
+        <div><strong>Total sin descuento:</strong> ${formato(total)}</div>
+        <div><strong>Descuento aplicado:</strong> -${formato(discountAmount)}</div>
+        <div><strong>Total final:</strong> ${formato(finalTotalGlobal)}</div>
+    `;
+
+    document.getElementById("copyBtn").style.display = "block";
+    document.getElementById("copyMsg").style.display = "none";
+}
+
+/* ========= COPIAR TOTAL ========= */
+function copyTotal() {
+
+    const select = document.getElementById("price");
+    const quantity = parseInt(document.getElementById("quantity").value) || 0;
+    const discount = parseFloat(document.getElementById("discount").value) || 0;
+
+    if (!select.value || !quantity) {
+        alert("Calculá primero el total.");
+        return;
+    }
+
+    const nombreProducto = select.options[select.selectedIndex].text.split(" (")[0];
+
+    let texto = nombreProducto + " x" + quantity + "\n";
+
+    if (discount > 0) {
+        texto += "Descuento: " + discount + "%\n";
+    }
+
+    texto += "\nTOTAL: " + formato(finalTotalGlobal);
+
+    copiarTextoUniversal(texto);
+}
+
+function copiarTextoUniversal(texto) {
+
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(texto)
+        .then(() => mostrarMensajeCopiado())
+        .catch(() => fallbackCopy(texto));
+    } else {
+        fallbackCopy(texto);
+    }
+}
+
+
+/* ====== FALLBACK UNIVERSAL ====== */
+function fallbackCopy(texto) {
+    try {
+        const textarea = document.createElement("textarea");
+        textarea.value = texto;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+
+        textarea.focus();
+        textarea.select();
+        textarea.setSelectionRange(0, 99999);
+
+        const exitoso = document.execCommand("copy");
+        document.body.removeChild(textarea);
+
+        if (exitoso) {
+            mostrarMensajeCopiado();
+        } else {
+            mostrarMensajeManual(texto);
+        }
+    } catch (err) {
+        mostrarMensajeManual(texto);
+    }
+}
+
+/* ====== MENSAJES ====== */
+function mostrarMensajeCopiado() {
+    const msg = document.getElementById("copyMsg");
+    msg.style.display = "block";
+    msg.textContent = "Total copiado ✔";
+    setTimeout(() => msg.style.display = "none", 2000);
+}
+
+function mostrarMensajeManual(texto) {
+    const msg = document.getElementById("copyMsg");
+    msg.style.display = "block";
+    msg.textContent = "Copiado automático no disponible. Copiá manualmente: " + texto;
+}
+
+
+</script>
+
+</body>
+</html>
