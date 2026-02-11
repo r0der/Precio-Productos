@@ -472,7 +472,7 @@ function copiarPedido(){
     }
 
     pedido.forEach(i=>{
-        texto += `${i.q} ${i.p.nombre}\n`;
+        texto += `${i.q} ${i.nombre}\n`;
         totalUnidades += parseInt(i.q);
         totalInversion += i.fin;
     });
@@ -493,3 +493,4 @@ function copiarPedido(){
 
 </body>
 </html>
+
