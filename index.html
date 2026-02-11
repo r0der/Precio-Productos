@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Simulador de Pedidos - Laboratorios Mar</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background: #ffffff;
+    color: #0f172a;
+}
+
+.container {
+    max-width: 420px;
+    margin: auto;
+    padding: 20px;
+}
+
+.card {
+    background: #f8fbff;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 16px;
+    color: #0284c7;
+}
+
+label {
+    display: block;
+    margin-top: 12px;
+    font-size: 14px;
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    margin-top: 6px;
+    border-radius: 8px;
+    border: 1px solid #cfe8f7;
+    font-size: 15px;
+}
+
+button {
+    width: 100%;
+    margin-top: 14px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: bold;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+.add-btn {
+    background: linear-gradient(135deg, #38bdf8, #0284c7);
+    color: #fff;
+}
+
+.secondary-btn {
+    background: linear-gradient(135deg, #0d9488, #0f766e);
+    color: #fff;
+}
+
+.ver-carrito-btn {
+    background: linear-gradient(135deg, #6366f1, #4338ca);
+    color: #fff;
+    display: none;
+}
+
+/* MENSAJES */
+.mensaje {
+    display: none;
+    margin-top: 12px;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.mensaje.ok {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.mensaje.error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* MODAL */
+.modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.modal {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 20px;
+    width: 92%;
+    max-width: 360px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal h3 {
+    margin: 0 0 10px 0;
+    color: #0284c7;
+    text-align: center;
+}
+
+.modal-content {
+    overflow-y: auto;
+    flex: 1;
+    margin-bottom: 12px;
+}
+
+.item-row {
+    padding: 10px 0;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.item-info {
+    max-width: 75%;
+}
+
+.descuento {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.remove-btn {
+    color: #ef4444;
+    font-size: 14px;
+    cursor: pointer;
+    margin-left: 8px;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.remove-btn:hover {
+    opacity: 0.6;
+}
+
+
+
+.total-box {
+    background: #e0f2fe;
+    padding: 10px;
+    border-radius: 10px;
+    margin-top: 10px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.modal button {
+    background: #0284c7;
+    color: #fff;
+}
+
+.resumen {
+    margin-top: 12px;
+    background: #f1f5f9;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+.resumen div {
+    margin: 4px 0;
+}
+
+.btn-vaciar {
+    background: #f1f5f9 !important;
+    color: #334155 !important;
+    border: 1px solid #cbd5e1;
+}
+
+.btn-vaciar:hover {
+    background: #e2e8f0 !important;
+}
+
+
+
+/* LEYENDA */
+.leyenda {
+    margin-top: 20px;
+    font-size: 13px;
+    text-align: center;
+    color: #64748b;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<div class="card">
+
+<h2>Simulador de pedidos</h2>
+
+<label>Cliente (opcional)</label>
+<input type="text" id="cliente" placeholder="Nombre del cliente">
+
+<label>Producto</label>
+<select id="productSelect">
+    <option value="">Seleccionar producto</option>
+</select>
+
+<label>Cantidad</label>
+<input type="number" id="quantity" placeholder="Ej: 6">
+
+<label>Descuento (%)</label>
+<input type="number" id="discount" placeholder="Ej: 38">
+
+<button class="add-btn" onclick="addProduct()">Agregar al pedido</button>
+<div id="resumenPedido" class="resumen" style="display:none;">
+    <div id="resumenUnidades"></div>
+    <div id="resumenTotal"></div>
+</div>
+
+<button class="ver-carrito-btn" id="verCarritoBtn" onclick="openCart()">Ver carrito</button>
+<button class="secondary-btn" onclick="copiarPedido()">Copiar detalle de pedido</button>
+<div id="mensaje" class="mensaje"></div>
+
+<div class="leyenda">
+Verifique al día montos mínimos de inversión
+</div>
+
+</div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="cartModal">
+    <div class="modal">
+        <h3>Detalle del pedido</h3>
+        <div class="modal-content" id="cartItems"></div>
+        <div class="total-box" id="cartTotal"></div>
+        <button onclick="vaciarPedido()" class="btn-vaciar">
+        Vaciar carrito
+        </button>
+<button onclick="closeCart()">Cerrar</button>
+    </div>
+</div>
+
+<!-- MODAL CONFIRMACION -->
+<div class="modal-bg" id="confirmModal">
+    <div class="modal">
+        <h3>Confirmar acción</h3>
+        <div style="text-align:center; margin-bottom:15px;">
+            ¿Seguro que querés vaciar el carrito?
+        </div>
+        <button onclick="confirmarVaciado()">Sí, vaciar</button>
+        <button class="btn-vaciar" onclick="cerrarConfirmacion()">Cancelar</button>
+    </div>
+</div>
+
+
+<script>
+let productos = [];
+let pedido = [];
+let totalPedido = 0;
+
+fetch("/api/productos")
+.then(r => r.json())
+.then(data => {
+    productos = data;
+    const sel = document.getElementById("productSelect");
+    data.forEach(p => {
+        const o = document.createElement("option");
+        o.value = p.id;
+        o.textContent = `${p.nombre} (${formato(p.precio)})`;
+        sel.appendChild(o);
+    });
+});
+
+function formato(v){ return "$" + v.toLocaleString("es-AR"); }
+
+function mostrarMensaje(texto, tipo){
+    const msg = document.getElementById("mensaje");
+    msg.style.display = "block";
+    msg.className = "mensaje " + tipo;
+    msg.textContent = texto;
+    setTimeout(() => msg.style.display = "none", 2000);
+}
+
+function addProduct(){
+    const id = productSelect.value;
+    const q = quantity.value;
+    const d = discount.value;
+
+    if(!id || !q || !d){
+        mostrarMensaje("Producto no ingresado, verifique datos", "error");
+        return;
+    }
+
+    const p = productos.find(x => x.id == id);
+    const sub = p.precio * q;
+    const fin = sub - sub * d / 100;
+
+    pedido.push({p,q,d,fin});
+    actualizarResumen();
+    document.getElementById("verCarritoBtn").style.display = "block";
+    mostrarMensaje("Producto agregado ✓", "ok");
+
+    quantity.value = "";
+    
+}
+
+function actualizarResumen(){
+
+    if(pedido.length === 0){
+        document.getElementById("resumenPedido").style.display = "none";
+        return;
+    }
+
+    let totalUnidades = 0;
+    totalPedido = 0;
+
+    pedido.forEach(i=>{
+        totalUnidades += parseInt(i.q);
+        totalPedido += i.fin;
+    });
+
+    document.getElementById("resumenUnidades").textContent =
+        "Total: " + totalUnidades + " unidades";
+
+    document.getElementById("resumenTotal").textContent =
+        "Inversión: " + formato(totalPedido);
+
+    document.getElementById("resumenPedido").style.display = "block";
+}
+
+
+function openCart(){
+
+    if(pedido.length === 0){
+        mostrarMensaje("No hay productos en el pedido", "error");
+        return;
+    }
+
+    const nombreCliente = document.getElementById("cliente").value.trim();
+
+    const container = document.getElementById("cartItems");
+    container.innerHTML = "";
+
+    if(nombreCliente !== ""){
+    const clienteDiv = document.createElement("div");
+    clienteDiv.style.marginBottom = "10px";
+    clienteDiv.style.fontWeight = "600";
+    clienteDiv.textContent = "Cliente: " + nombreCliente;
+    container.appendChild(clienteDiv);
+}
+
+    totalPedido = 0;
+    let totalUnidades = 0;
+
+    pedido.forEach((i,index)=>{
+        totalPedido += i.fin;
+        totalUnidades += parseInt(i.q);
+
+        const div = document.createElement("div");
+        div.className = "item-row";
+        div.innerHTML = `
+            <div class="item-info">
+                <strong>${i.q}</strong> ${i.p.nombre} - ${formato(i.fin)}
+                ${i.d > 0 ? `<div class="descuento">(Descuento ${i.d}%)</div>` : ""}
+            </div>
+            <span class="remove-btn" onclick="removeItem(${index})">✖</span>
+        `;
+        container.appendChild(div);
+    });
+
+    // 👇 AGREGAMOS TOTAL DE UNIDADES
+    const unidadesDiv = document.createElement("div");
+    unidadesDiv.style.marginTop = "10px";
+    unidadesDiv.style.fontWeight = "500";
+    unidadesDiv.textContent = "Total unidades: " + totalUnidades;
+
+    container.appendChild(unidadesDiv);
+
+    document.getElementById("cartTotal").textContent =
+        "Total inversión: " + formato(totalPedido);
+
+    document.getElementById("cartModal").style.display = "flex";
+}
+
+
+function removeItem(index){
+    pedido.splice(index, 1);
+
+    if(pedido.length === 0){
+        document.getElementById("cartModal").style.display = "none";
+        document.getElementById("verCarritoBtn").style.display = "none";
+    } else {
+        openCart();
+    }
+
+    actualizarResumen();
+}
+
+
+function closeCart(){
+    document.getElementById("cartModal").style.display = "none";
+}
+
+function vaciarPedido(){
+    if(pedido.length === 0){
+        mostrarMensaje("El pedido ya está vacío", "error");
+        return;
+    }
+
+    document.getElementById("confirmModal").style.display = "flex";
+}
+
+function confirmarVaciado(){
+
+    pedido = [];
+    totalPedido = 0;
+
+    document.getElementById("cartItems").innerHTML = "";
+    document.getElementById("cartTotal").textContent = "";
+    document.getElementById("cartModal").style.display = "none";
+    document.getElementById("confirmModal").style.display = "none";
+    document.getElementById("verCarritoBtn").style.display = "none";
+
+    actualizarResumen();
+
+    mostrarMensaje("Pedido vaciado ✔", "ok");
+}
+
+function cerrarConfirmacion(){
+    document.getElementById("confirmModal").style.display = "none";
+}
+
+
+function copiarPedido(){
+
+    if(pedido.length === 0){
+        mostrarMensaje("No hay productos para copiar", "error");
+        return;
+    }
+
+    const nombreCliente = document.getElementById("cliente").value.trim();
+
+    let texto = "";
+    let totalUnidades = 0;
+    let totalInversion = 0;
+
+    if(nombreCliente !== ""){
+    texto += `CLIENTE: ${nombreCliente}\n\n`;
+    }
+
+    pedido.forEach(i=>{
+        texto += `${i.q} ${i.p.nombre}\n`;
+        totalUnidades += parseInt(i.q);
+        totalInversion += i.fin;
+    });
+
+    texto += `\nTOTAL UNIDADES: ${totalUnidades}\n`;
+    texto += `TOTAL INVERSIÓN: ${formato(totalInversion)}`;
+
+    navigator.clipboard.writeText(texto);
+
+    const msg = document.getElementById("mensaje");
+    msg.style.display = "block";
+    msg.textContent = "Pedido copiado ✔";
+    setTimeout(() => msg.style.display = "none", 2000);
+}
+
+
+</script>
+
+</body>
+</html>
