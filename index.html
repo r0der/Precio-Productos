@@ -460,7 +460,8 @@ function copiarPedido(){
         mostrarMensaje("No hay productos para copiar", "error");
         return;
     }
-
+    
+    console.log(pedido);
     const nombreCliente = document.getElementById("cliente").value.trim();
 
     let texto = "";
@@ -472,7 +473,7 @@ function copiarPedido(){
     }
 
     pedido.forEach(i=>{
-        texto += `${i.q} ${i.nombre}\n`;
+        texto += `${i.q} ${i.p.nombre}\n`;
         totalUnidades += parseInt(i.q);
         totalInversion += i.fin;
     });
@@ -493,4 +494,5 @@ function copiarPedido(){
 
 </body>
 </html>
+
 
