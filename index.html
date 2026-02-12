@@ -468,9 +468,9 @@ function copiarPedido(){
     let totalInversion = 0;
 
     if(nombreCliente !== ""){
-    texto += `CLIENTE: ${nombreCliente}\n\n`;
+        texto += `CLIENTE: ${nombreCliente}\n\n`;
     }
-
+    
     pedido.forEach(i=>{
         texto += `${i.q} ${i.p.nombre}\n`;
         totalUnidades += parseInt(i.q);
@@ -480,12 +480,44 @@ function copiarPedido(){
     texto += `\nTOTAL UNIDADES: ${totalUnidades}\n`;
     texto += `TOTAL INVERSIÓN: ${formato(totalInversion)}`;
 
-    navigator.clipboard.writeText(texto);
+    copiarTextoUniversal(texto);
+}
 
-    const msg = document.getElementById("mensaje");
-    msg.style.display = "block";
-    msg.textContent = "Pedido copiado ✔";
-    setTimeout(() => msg.style.display = "none", 2000);
+function copiarTextoUniversal(texto){
+
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(texto)
+        .then(() => mostrarMensaje("Pedido copiado ✔", "ok"))
+        .catch(() => fallbackCopy(texto));
+    } else {
+        fallbackCopy(texto);
+    }
+}
+
+function fallbackCopy(texto){
+    try{
+        const textarea = document.createElement("textarea");
+        textarea.value = texto;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+
+        textarea.focus();
+        textarea.select();
+        textarea.setSelectionRange(0, 99999);
+
+        const ok = document.execCommand("copy");
+        document.body.removeChild(textarea);
+
+        if(ok){
+            mostrarMensaje("Pedido copiado ✔", "ok");
+        } else {
+            mostrarMensaje("No se pudo copiar automáticamente", "error");
+        }
+
+    } catch(e){
+        mostrarMensaje("No se pudo copiar automáticamente", "error");
+    }
 }
 
 
@@ -493,6 +525,7 @@ function copiarPedido(){
 
 </body>
 </html>
+
 
 
 
